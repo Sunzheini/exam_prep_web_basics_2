@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from exam_prep_web_basics_2.my_music_app.forms import ProfileForm
+from exam_prep_web_basics_2.my_music_app.forms import ProfileForm, AlbumForm, AlbumEditForm, AlbumDeleteForm, \
+    ProfileDeleteForm
 from exam_prep_web_basics_2.my_music_app.models import Profile, Album
 
 
@@ -47,27 +48,96 @@ def index(request):
 # --------------------------------------------------------------------------
 
 def add_album(request):
-    return render(request, 'albums/add-album.html')
+
+    if request.method == 'GET':
+        form = AlbumForm()
+    else:
+        form = AlbumForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'albums/add-album.html', context)
 
 
 def album_details(request, pk):
-    return render(request, 'albums/album-details.html')
+    album = Album.objects.get(pk=pk)
+
+    context = {
+        'album': album,
+    }
+
+    return render(request, 'albums/album-details.html', context)
 
 
 def edit_album(request, pk):
-    return render(request, 'albums/edit-album.html')
+
+    album = Album.objects.get(pk=pk)
+
+    if request.method == 'GET':
+        form = AlbumEditForm(instance=album)
+    else:
+        form = AlbumEditForm(request.POST, instance=album)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+
+    context = {
+        'form': form,
+        'album': album,
+    }
+    return render(request, 'albums/edit-album.html', context)
 
 
 def delete_album(request, pk):
-    return render(request, 'albums/delete-album.html')
+
+    album = Album.objects.get(pk=pk)
+
+    if request.method == 'GET':
+        form = AlbumDeleteForm(instance=album)
+    else:
+        form = AlbumDeleteForm(request.POST, instance=album)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+
+    context = {
+        'form': form,
+        'album': album,
+    }
+    return render(request, 'albums/delete-album.html', context)
 
 
 def profile_details(request):
-    return render(request, 'profiles/profile-details.html')
+    profile = get_profile()
+    albums_count = Album.objects.count()
+
+    context = {
+        'profile': profile,
+        'albums_count': albums_count,
+    }
+
+    return render(request, 'profiles/profile-details.html', context)
 
 
 def profile_delete(request):
-    return render(request, 'profiles/profile-delete.html')
+    profile = get_profile()
+
+    if request.method == 'GET':
+        form = ProfileDeleteForm(instance=profile)
+    else:
+        form = ProfileDeleteForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'profiles/profile-delete.html', context)
 
 
 
